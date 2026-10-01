@@ -213,6 +213,36 @@ public class ModelTests
     }
 
     [Fact]
+    public void Result_SuccessMethod_ReturnsSuccessResult()
+    {
+        // Arrange
+        var data = "Sample data";
+        var message = "Operation successful.";
+
+        // Act
+        var result = Result<string>.Success(data, message);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal(message, result.Message);
+        Assert.Equal(data, result.Data);
+    }
+
+    [Fact]
+    public void Result_FailureMethod_ReturnsFailureResult()
+    {
+        // Arrange
+        var message = "Operation failed.";
+
+        // Act
+        var result = Result<string>.Failure(message);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(message, result.Message);
+    }
+
+    [Fact]
     public void CreateUrlDto_PropertiesCanBeSetAndRetrieved()
     {
         // Arrange
