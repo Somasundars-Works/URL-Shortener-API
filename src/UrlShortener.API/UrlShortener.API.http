@@ -2,7 +2,7 @@
 @urlId = 00000000-0000-0000-0000-000000000000
 @shortCode = abc12345
 
-GET {{UrlShortener.API_HostAddress}}/weatherforecast/
+GET {{UrlShortener.API_HostAddress}}/api/health/
 Accept: application/json
 
 ###
