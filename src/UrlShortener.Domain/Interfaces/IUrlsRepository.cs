@@ -6,9 +6,9 @@ namespace UrlShortener.Domain.Interfaces;
 
 public interface IUrlsRepository
 {
-    public Task<Result<string>> GetUrlByShortenedUrlAsync(string shortenedUrl);
-    public Task<Result<GetByIdResponseDto>> GetUrlByIdAsync(Guid id);
-    public Task<Result<ListUrlsResponse>> GetAllUrlsAsync();
-    public Task<Result<string>> CreateUrlAsync(CreateUrlDto url);
-    public Task<Result<string>> UpdateUrlAsync(Guid id, EditUrlDto url);
+    Task<Result<string>> GetUrlByShortenedUrlAsync(string shortenedUrl, CancellationToken cancellationToken);
+    Task<Result<GetByIdResponseDto>> GetUrlByIdAsync(Guid id, CancellationToken cancellationToken);
+    Task<Result<ListUrlsResponse>> GetAllUrlsAsync(CancellationToken cancellationToken);
+    Task<Result<string>> CreateUrlAsync(CreateUrlDto url, CancellationToken cancellationToken);
+    Task<Result<string>> UpdateUrlAsync(Guid id, EditUrlDto url, CancellationToken cancellationToken);
 }

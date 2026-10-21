@@ -19,7 +19,7 @@ public class UrlsRepository : IUrlsRepository
         _dynamoDbContext = dynamoDbContext;
     }
 
-    public async Task<Result<string>> CreateUrlAsync(CreateUrlDto url)
+    public async Task<Result<string>> CreateUrlAsync(CreateUrlDto url, CancellationToken cancellationToken)
     {
         if (url is null)
         {
@@ -42,13 +42,13 @@ public class UrlsRepository : IUrlsRepository
         {
             Id = Guid.NewGuid(),
             OriginalUrl = originalUrl,
-            ShortenedUrl = await GenerateUniqueShortenedUrlAsync(),
+            ShortenedUrl = await GenerateUniqueShortenedUrlAsync(cancellationToken),
             CreatedAt = DateTime.UtcNow,
             ExpirationDate = DBContextHelpers.NormalizeExpirationDate(url.ExpirationDate),
             IsActive = true
         };
 
-        await _dynamoDbContext.SaveAsync(item);
+        await _dynamoDbContext.SaveAsync(item, cancellationToken);
 
         return new Result<string>
         {
@@ -58,11 +58,11 @@ public class UrlsRepository : IUrlsRepository
         };
     }
 
-    public async Task<Result<ListUrlsResponse>> GetAllUrlsAsync()
+    public async Task<Result<ListUrlsResponse>> GetAllUrlsAsync(CancellationToken cancellationToken)
     {
         var items = await _dynamoDbContext
             .ScanAsync<UrlsTable>(new List<ScanCondition>())
-            .GetRemainingAsync();
+            .GetRemainingAsync(cancellationToken);
 
         var response = new ListUrlsResponse
         {
@@ -87,9 +87,9 @@ public class UrlsRepository : IUrlsRepository
         };
     }
 
-    public async Task<Result<GetByIdResponseDto>> GetUrlByIdAsync(Guid id)
+    public async Task<Result<GetByIdResponseDto>> GetUrlByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        var item = await _dynamoDbContext.LoadAsync<UrlsTable>(id);
+        var item = await _dynamoDbContext.LoadAsync<UrlsTable>(id, cancellationToken);
         if (item is null)
         {
             return Result<GetByIdResponseDto>.Failure($"URL with id {id} was not found.");
@@ -110,7 +110,7 @@ public class UrlsRepository : IUrlsRepository
         };
     }
 
-    public async Task<Result<string>> GetUrlByShortenedUrlAsync(string shortenedUrl)
+    public async Task<Result<string>> GetUrlByShortenedUrlAsync(string shortenedUrl, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(shortenedUrl))
         {
@@ -123,7 +123,7 @@ public class UrlsRepository : IUrlsRepository
             {
                 new(nameof(UrlsTable.ShortenedUrl), ScanOperator.Equal, normalizedShortUrl)
             })
-            .GetRemainingAsync();
+            .GetRemainingAsync(cancellationToken);
 
         var item = result
             .FirstOrDefault(x => x.IsActive && (x.ExpirationDate is null || x.ExpirationDate > DateTime.UtcNow));
@@ -141,7 +141,7 @@ public class UrlsRepository : IUrlsRepository
         };
     }
 
-    public async Task<Result<string>> UpdateUrlAsync(Guid id, EditUrlDto url)
+    public async Task<Result<string>> UpdateUrlAsync(Guid id, EditUrlDto url, CancellationToken cancellationToken)
     {
         if (url is null)
         {
@@ -153,7 +153,7 @@ public class UrlsRepository : IUrlsRepository
             return Result<string>.Failure("OriginalUrl is required.");
         }
 
-        var existing = await _dynamoDbContext.LoadAsync<UrlsTable>(id);
+        var existing = await _dynamoDbContext.LoadAsync<UrlsTable>(id, cancellationToken);
         if (existing is null)
         {
             return Result<string>.Failure($"URL with id {id} was not found.");
@@ -170,7 +170,7 @@ public class UrlsRepository : IUrlsRepository
         existing.ExpirationDate = DBContextHelpers.NormalizeExpirationDate(url.ExpirationDate);
         existing.IsActive = url.IsActive;
 
-        await _dynamoDbContext.SaveAsync(existing);
+        await _dynamoDbContext.SaveAsync(existing, cancellationToken);
 
         return new Result<string>
         {
@@ -180,7 +180,7 @@ public class UrlsRepository : IUrlsRepository
         };
     }
 
-    private async Task<string> GenerateUniqueShortenedUrlAsync()
+    private async Task<string> GenerateUniqueShortenedUrlAsync(CancellationToken cancellationToken)
     {
         while (true)
         {
@@ -190,7 +190,7 @@ public class UrlsRepository : IUrlsRepository
                 {
                     new(nameof(UrlsTable.ShortenedUrl), ScanOperator.Equal, candidate)
                 })
-                .GetRemainingAsync();
+                .GetRemainingAsync(cancellationToken);
 
             if (matches.Count == 0)
             {

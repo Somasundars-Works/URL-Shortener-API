@@ -1,6 +1,37 @@
 @UrlShortener.API_HostAddress = http://localhost:5267
+@urlId = 00000000-0000-0000-0000-000000000000
+@shortCode = abc12345
 
 GET {{UrlShortener.API_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+### Get all URLs
+GET {{UrlShortener.API_HostAddress}}/api/urls
+Accept: application/json
+
+### Get a URL by ID
+GET {{UrlShortener.API_HostAddress}}/api/urls/{{urlId}}
+Accept: application/json
+
+### Resolve a short code
+GET {{UrlShortener.API_HostAddress}}/api/urls/short/{{shortCode}}
+
+### Create a shortened URL
+POST {{UrlShortener.API_HostAddress}}/api/urls
+Content-Type: application/json
+
+{
+  "originalUrl": "https://example.com"
+}
+
+### Update a URL
+PUT {{UrlShortener.API_HostAddress}}/api/urls/{{urlId}}
+Content-Type: application/json
+
+{
+  "originalUrl": "https://example.org",
+  "expirationDate": null,
+  "isActive": true
+}

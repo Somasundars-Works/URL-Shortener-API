@@ -1,5 +1,6 @@
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
+using UrlShortener.API.Endpoints;
 using UrlShortener.Domain.Interfaces;
 using UrlShortener.Infrastructure.Repository;
 
@@ -23,6 +24,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.MapUrlShortenerEndpoints();
 
 var summaries = new[]
 {
